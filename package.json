@@ -1,5 +1,5 @@
 {
-  "name": "pi-coli",
+  "name": "coli",
   "version": "1.0.0",
   "description": "Scheduled task supervisor for pi – defer prompts and let a different model evaluate progress across multiple rounds",
   "keywords": ["pi-package", "pi-extension", "scheduler", "supervisor", "coli"],
@@ -7,13 +7,12 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/USER/pi-coli"
+    "url": "https://github.com/cocolinfff/coli"
   },
   "pi": {
     "extensions": [
       "./index.ts"
-    ],
-    "image": "https://raw.githubusercontent.com/USER/pi-coli/main/screenshot.png"
+    ]
   },
   "peerDependencies": {
     "@mariozechner/pi-ai": "*",

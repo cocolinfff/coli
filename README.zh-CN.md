@@ -35,7 +35,7 @@ Coli 是一个 pi-coding-agent 扩展，实现**定时触发 + 不同模型监�
 ## 安装
 
 ```bash
-pi install git:github.com/cocolinfff/pi-coli
+pi install git:github.com/cocolinfff/coli
 ```
 
 安装后 `/reload` 或重启 pi。

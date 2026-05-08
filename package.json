@@ -7,13 +7,13 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/USER/pi-coli"
+    "url": "https://github.com/cocolinfff/coli"
   },
   "pi": {
     "extensions": [
       "./index.ts"
     ],
-    "image": "https://raw.githubusercontent.com/USER/pi-coli/main/screenshot.png"
+    "image": "https://raw.githubusercontent.com/cocolinfff/coli/main/screenshot.png"
   },
   "peerDependencies": {
     "@mariozechner/pi-ai": "*",

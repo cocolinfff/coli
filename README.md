@@ -13,7 +13,7 @@ Coli is a `pi-coding-agent` extension for **deferred execution + multi-round sup
 ## Install
 
 ```bash
-pi install git:github.com/cocolinfff/pi-coli
+pi install git:github.com/cocolinfff/coli
 ```
 
 Then run `/reload` (or restart pi).

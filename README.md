@@ -80,28 +80,6 @@ After the trigger time, Coli injects the task into the current session as a foll
 
 ---
 
-## Tool: `coli_schedule`
-
-LLMs can schedule follow-up tasks directly via tool call.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `delay_seconds` | `number` | Delay before trigger |
-| `task_description` | `string` | Task for working agent |
-| `max_rounds` | `number` (optional) | Max rounds override (`1-20`) |
-| `supervisor_model` | `string` (optional) | Supervisor model in `provider/modelId` |
-
-Example:
-
-```json
-coli_schedule({
-  "delay_seconds": 300,
-  "task_description": "Run npm test and fix failing cases"
-})
-```
-
----
-
 ## How It Works
 
 ```text
@@ -147,9 +125,9 @@ User / LLM -> schedule task (delay + supervisor) -> timer fires
 /coli schedule at 02:00 Run npm test, analyze failures, fix code, rerun until all tests pass
 ```
 
-### Self-scheduled follow-up
+### Manual follow-up
 
-Ask the working agent to refactor first, then let it call `coli_schedule` for post-check validation.
+After refactoring, run `/coli schedule` yourself for post-check validation.
 
 ---
 

@@ -134,8 +134,7 @@ pi install git:github.com/cocolinfff/coli
 
 ### 案例 3：LLM 自我调度子任务
 
-> 你让工作 Agent 重构一个大型模块，它决定先完成核心重构，然后安排 2 分钟
-> 后自查遗漏。工作 Agent 主动调用 `coli_schedule` 工具。
+> 你让工作 Agent 重构一个大型模块，完成后由你手动安排 2 分钟后的自查任务。
 
 你只需对 pi 说：
 
@@ -144,17 +143,7 @@ pi install git:github.com/cocolinfff/coli
 order/cancel.ts，保持所有现有测试通过，完成后自查是否有遗漏
 ```
 
-工作 Agent 完成重构后，自行调用：
-
-```json
-coli_schedule({
-  "delay_seconds": 120,
-  "task_description": "检查 order 模块重构：确认所有 import 路径已更新、没有循环依赖、旧文件已删除、所有测试仍通过",
-  "max_rounds": 3
-})
-```
-
-2 分钟后 Coli 触发自查任务，监督模型确保没有遗漏。
+工作 Agent 完成重构后，由你手动运行 `/coli schedule` 安排自查任务。
 
 ### 案例 4：弱模型工作 + 强模型监督
 
@@ -248,26 +237,6 @@ haiku（工作 Agent）执行编码 → 完成后 sonnet（监督 Agent）做最
 | `in X seconds` | `in 30 seconds` |
 | `at HH:MM` | `at 15:30` |
 | 毫秒数 | `300000` |
-
-## Tool：`coli_schedule`
-
-LLM 可调用此工具自行安排子任务。
-
-### 参数
-
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `delay_seconds` | number | 延迟秒数 |
-| `task_description` | string | 任务描述 |
-| `max_rounds` | number (可选) | 最大轮次，默认使用配置值 |
-| `supervisor_model` | string (可选) | `"provider/modelId"`，默认使用配置值 |
-
-### 示例
-
-```
-"完成重构后帮我安排 5 分钟后跑测试并修复失败用例"
-→ coli_schedule({ delay_seconds: 300, task_description: "npm test 并修复所有失败" })
-```
 
 ## 架构细节
 

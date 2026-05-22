@@ -13,7 +13,7 @@
  *   /coli cancel <id>                Cancel a task
  *   /coli help                       Show help
  *
- *   Tool: coli_schedule              LLM can self-schedule follow-up tasks
+ *   Manual only: /coli schedule      Users can schedule follow-up tasks manually
  */
 
 import * as crypto from "node:crypto";
@@ -23,7 +23,6 @@ import type {
   ExtensionContext,
   SessionEntry,
 } from "@mariozechner/pi-coding-agent";
-import { Type } from "typebox";
 import { cancel, cancelAll, schedule } from "./scheduler.js";
 import { evaluate } from "./supervisor.js";
 import type {
@@ -607,7 +606,7 @@ export default function (pi: ExtensionAPI) {
             "  /coli list                    列出所有任务",
             "  /coli cancel <id>             取消任务",
             "",
-            "LLM 也可调用 coli_schedule 工具自行安排子任务。",
+            "仅用户可手动运行 /coli schedule 来安排子任务。",
           ].join("\n"),
           "info",
         );
@@ -679,125 +678,6 @@ export default function (pi: ExtensionAPI) {
         `未知子命令 "${sub}"。使用 /coli help 查看帮助`,
         "error",
       );
-    },
-  });
-
-  // =========================================================================
-  // Tool: coli_schedule (LLM can self-schedule)
-  // =========================================================================
-
-  pi.registerTool({
-    name: "coli_schedule",
-    label: "Coli Schedule",
-    description: [
-      "安排一个延时任务，由监督模型在多个轮次中评估工作 Agent 的完成情况。",
-      "监督模型仅评估，不执行任何文件读写或命令。",
-    ].join(" "),
-    promptSnippet: "安排延时任务，由另一个模型在最多 N 轮内监督完成",
-    promptGuidelines: [
-      "当你想在稍后执行某任务（如代码生成完成后验证、等待外部变更稳定、批量任务），使用 coli_schedule。监督模型只做评估，任务由当前工作 Agent 实际执行。",
-    ],
-    parameters: Type.Object({
-      delay_seconds: Type.Number({
-        description: "触发前的延迟秒数",
-      }),
-      task_description: Type.String({
-        description: "工作 Agent 应完成的任务描述",
-      }),
-      max_rounds: Type.Optional(
-        Type.Number({
-          description: `最大监督轮次（默认 ${config.maxRounds}，范围 1-20）`,
-          default: config.maxRounds,
-        }),
-      ),
-      supervisor_model: Type.Optional(
-        Type.String({
-          description:
-            '监督模型 "provider/modelId"（默认使用 /coli setup 配置的模型）',
-        }),
-      ),
-    }),
-    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-      const delayMs = params.delay_seconds * 1000;
-      const triggerAt = Date.now() + delayMs;
-      const maxRounds = Math.max(1, Math.min(20, params.max_rounds ?? config.maxRounds));
-
-      // Resolve supervisor model
-      let sp = "";
-      let sm = "";
-      if (params.supervisor_model) {
-        const idx = params.supervisor_model.indexOf("/");
-        if (idx > 0) {
-          sp = params.supervisor_model.slice(0, idx);
-          sm = params.supervisor_model.slice(idx + 1);
-        }
-      }
-
-      if (sp && sm) {
-        // Explicit model from params
-        const m = ctx.modelRegistry.find(sp, sm);
-        if (!m) {
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: `监督模型未找到: ${sp}/${sm}。任务未创建。`,
-              },
-            ],
-            details: {},
-          };
-        }
-      } else {
-        // Use configured or auto-discovered
-        const sup = await resolveSupervisorModel(ctx);
-        if (!sup) {
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: "没有可用的监督模型。请先运行 /coli setup model。",
-              },
-            ],
-            details: {},
-          };
-        }
-        sp = sup.provider;
-        sm = sup.id;
-      }
-
-      const task: ScheduledTask = {
-        id: uid(),
-        description: params.task_description,
-        triggerAt,
-        maxRounds,
-        currentRound: 0,
-        status: "pending",
-        supervisorProvider: sp,
-        supervisorModelId: sm,
-        roundSummaries: [],
-        createdAt: Date.now(),
-        supervisorUsage: { prompts: 0, inputTokens: 0, outputTokens: 0, cost: 0 },
-      };
-
-      tasks.set(task.id, task);
-      persistTask(pi, task);
-      schedule(task, () => fireTask(pi, task));
-
-      return {
-        content: [
-          {
-            type: "text" as const,
-            text: [
-              `\u2713 Coli task scheduled [${task.id}]`,
-              `Trigger: ${fmtTime(triggerAt)} (in ${params.delay_seconds}s)`,
-              `Task: ${params.task_description}`,
-              `Supervisor: ${sp}/${sm}`,
-              `Max rounds: ${maxRounds}`,
-            ].join("\n"),
-          },
-        ],
-        details: { taskId: task.id, triggerAt, status: "pending" },
-      };
     },
   });
 
